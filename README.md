@@ -1,3 +1,7 @@
+# NOTE: I DID NOT WRITE A SINGLE LINE.
+
+Everything is written by Claude. It's going to take my job away
+
 # Go Test Finder (Rust Version)
 
 A Rust rewrite of the Go test finder tool using [skim](https://github.com/skim-rs/skim) for fuzzy selection.
