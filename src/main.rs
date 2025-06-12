@@ -3,6 +3,7 @@ use clap::Parser;
 use regex::Regex;
 use skim::prelude::*;
 use std::io::Cursor;
+use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
 use walkdir::WalkDir;
@@ -82,10 +83,7 @@ fn parse_test_file(path: &Path) -> Result<Vec<TestInfo>> {
     let content = std::fs::read_to_string(path)?;
     let mut tests = Vec::new();
 
-    // Regex to match test functions
     let test_func_regex = Regex::new(r"func\s+(Test\w+)\s*\([^)]*\*testing\.[TB]\w*\)")?;
-
-    // Regex to match t.Run calls for subtests
     let subtest_regex = Regex::new(r#"\.Run\s*\(\s*"([^"]+)""#)?;
 
     let lines: Vec<&str> = content.lines().collect();
@@ -95,7 +93,6 @@ fn parse_test_file(path: &Path) -> Result<Vec<TestInfo>> {
             let test_name = caps.get(1).unwrap().as_str().to_string();
             let mut subtests = Vec::new();
 
-            // Look for subtests in the function body (simple heuristic)
             let mut brace_count = 0;
             let mut in_function = false;
 
@@ -195,6 +192,7 @@ fn skim_select(options: &[String]) -> Result<Vec<String>> {
 
     let skim_options = SkimOptionsBuilder::default()
         .height("50%".to_string())
+        .color(Some("light".to_string()))
         .multi(true)
         .prompt("Select tests (TAB to multi-select): ".to_string())
         .header(Some(
@@ -204,6 +202,9 @@ fn skim_select(options: &[String]) -> Result<Vec<String>> {
         .map_err(|e| anyhow::anyhow!("Failed to build skim options: {}", e))?;
 
     let result = Skim::run_with(&skim_options, Some(items));
+
+    print!("\x1b[2J\x1b[H");
+    io::stdout().flush().unwrap();
 
     if let Some(output) = result {
         if output.is_abort {
