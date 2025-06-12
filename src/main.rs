@@ -227,15 +227,10 @@ fn build_run_pattern(selected_tests: &[String]) -> String {
     }
 
     if selected_tests.len() == 1 {
-        return format!("^{}$", selected_tests[0]);
+        return selected_tests[0].clone();
     }
 
-    let patterns: Vec<String> = selected_tests
-        .iter()
-        .map(|test| format!("^{}$", test))
-        .collect();
-
-    format!("({})", patterns.join("|"))
+    selected_tests.join("|")
 }
 
 fn execute_go_test(run_pattern: &str, tags: Option<String>, verbose: bool) -> Result<()> {
@@ -251,7 +246,7 @@ fn execute_go_test(run_pattern: &str, tags: Option<String>, verbose: bool) -> Re
     }
 
     if !run_pattern.is_empty() {
-        cmd.arg(format!("-run={}", run_pattern));
+        cmd.arg("-run").arg(run_pattern);
     }
 
     cmd.arg("./...");
